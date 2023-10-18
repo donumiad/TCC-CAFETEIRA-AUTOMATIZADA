@@ -2,7 +2,7 @@
 /*
 ******************************AREA DESTINADA A PROGRAMA DE DEBUG DO CÓDIGO*****************************************************
 */
-#define pinBotaoDebug 18
+#define pinBotaoDebug 16
 #define habilitaDebugSerial false  //define se envia informações do funcionamento para o monitor serial. "true" envia e "false" não envia. Utilizado apenas para identificar problemas de funcionamento atraves do monitor serial do IDE Arduino. Em situações normais, definir este parametro como "false". Quando usar o monitor, ele deve ser configurado para a velocidade de 115200.
 
 #if habilitaDebugSerial == true
@@ -54,7 +54,8 @@ TESTE CAFETEIRA
     - TEMPO PARA ESVAZIAR - 8,40 min
     - LIGA DESLIGA RELÉ - 9,12 - 9,22 - 9,32 - 9,51 - 
 */
-#define pinRele 17
+#define pinRele 17      //Pino usado para ligar a cafeteira
+#define detectaBule 18  //pino usado para conferir se o bule está na cafeteira ou não
 
 
 void paginaHTML(WiFiClient client);
@@ -70,7 +71,7 @@ const long  gmtOffset_sec = -3 * 60 * 60;
 const int   daylightOffset_sec = 0;
 const char* time_zone = "CET-1CEST,M3.5.0,M10.5.0/3";  // TimeZone rule for Europe/Rome including daylight adjustment rules (optional)
 
-const int tempoMaxLigada = 2;   //tempo máximo que a cafeteira vai permanecer ligada em minutos
+const int tempoMaxLigada = 9;   //tempo máximo que a cafeteira vai permanecer ligada em minutos
 
   /*************************definição de variáveis Globais***********************************/
     String currentLine = "";        // make a String to hold incoming data from the client
@@ -93,6 +94,7 @@ void setup() {
 
   Serial.begin(115200);
   pinMode(pinRele, OUTPUT);
+  pinMode(detectaBule, INPUT_PULLUP);
 
   // set notification call-back function
   //sntp_set_time_sync_notification_cb( timeavailable );
@@ -154,7 +156,6 @@ void loop() {
         Serial.write(c);         // print it out the serial monitor
 
         if (c == '\n') {  // if the byte is a newline character
-          //AQUI
           // if the current line is blank, you got two newline characters in a row.
           // that's the end of the client HTTP request, so send a response:
           if (currentLine.length() == 0) {
@@ -162,7 +163,7 @@ void loop() {
             paginaHTML(client);  //Mostra a pagina HTML
             break;    // break out of the while loop:
 
-          } else {  // if you got a newline, then clear currentLine:
+          } else {  
             capturaDadosURL();
           }
 
@@ -261,84 +262,88 @@ void analisarProgramacao(int horaAtual, int minutoAtual, int diaDaSemanaAtual){
     Serial.println("Cafeteira NÃO programada!");    //NÃO, ENTÃO IMPRIME A MSG
     mostraMsg = 0;
   }else{                                            //SIM, EXECUTA A FUNÇÃO ABAIXO
-    switch (programacao)
-    {
-      case 1:
-      if(diasem[diaDaSemanaAtual] == diaDaSemanaAtual){                           //DIA PARA FAZER CAFÉ É HOJE?
-        if(hora1 != 0 && (hora1 == horaAtual && min1 == minutoAtual))  {     //SIM, A HORA PARA FAZER CAFÉ É MAIOR QUE A HORA ATUAL
-          digitalWrite(pinRele, HIGH);
-          estadoCafeteira = 1;
-          minTemp = minutoAtual;
-        }else{
-          if(hora2 != 0 && (hora2 == horaAtual && min2 == minutoAtual)){
+    if (detectaBule == LOW){
+      Serial.println("Bule não está na cafeteira");
+      return;
+    }else{
+      switch (programacao)
+      {
+        case 1:
+        if(diasem[diaDaSemanaAtual] == diaDaSemanaAtual){                           //DIA PARA FAZER CAFÉ É HOJE?
+          if(hora1 != 0 && (hora1 == horaAtual && min1 == minutoAtual))  {     //SIM, A HORA PARA FAZER CAFÉ É MAIOR QUE A HORA ATUAL
             digitalWrite(pinRele, HIGH);
             estadoCafeteira = 1;
             minTemp = minutoAtual;
           }else{
-            if(hora3 != 0 && (hora3 == horaAtual && min3 == minutoAtual)){
+            if(hora2 != 0 && (hora2 == horaAtual && min2 == minutoAtual)){
               digitalWrite(pinRele, HIGH);
               estadoCafeteira = 1;
               minTemp = minutoAtual;
+            }else{
+              if(hora3 != 0 && (hora3 == horaAtual && min3 == minutoAtual)){
+                digitalWrite(pinRele, HIGH);
+                estadoCafeteira = 1;
+                minTemp = minutoAtual;
+              }
             }
-          }
-        }                                  
-      }
-      break;
+          }                                  
+        }
+        break;
 
-      case 2:
-      if(diasem[diaDaSemanaAtual] == diaDaSemanaAtual){                           //DIA PARA FAZER CAFÉ É HOJE?
-        if(hora1 != 0 && (hora1 == horaAtual && min1 == minutoAtual))  {     //SIM, A HORA PARA FAZER CAFÉ É MAIOR QUE A HORA ATUAL
-          digitalWrite(pinRele, HIGH);
-          estadoCafeteira = 1;
-          minTemp = minutoAtual;
-        }else{
-          if(hora2 != 0 && (hora2 == horaAtual && min2 == minutoAtual)){
+        case 2:
+        if(diasem[diaDaSemanaAtual] == diaDaSemanaAtual){                           //DIA PARA FAZER CAFÉ É HOJE?
+          if(hora1 != 0 && (hora1 == horaAtual && min1 == minutoAtual))  {     //SIM, A HORA PARA FAZER CAFÉ É MAIOR QUE A HORA ATUAL
             digitalWrite(pinRele, HIGH);
             estadoCafeteira = 1;
             minTemp = minutoAtual;
           }else{
-            if(hora3 != 0 && (hora3 == horaAtual && min3 == minutoAtual)){
+            if(hora2 != 0 && (hora2 == horaAtual && min2 == minutoAtual)){
               digitalWrite(pinRele, HIGH);
               estadoCafeteira = 1;
               minTemp = minutoAtual;
+            }else{
+              if(hora3 != 0 && (hora3 == horaAtual && min3 == minutoAtual)){
+                digitalWrite(pinRele, HIGH);
+                estadoCafeteira = 1;
+                minTemp = minutoAtual;
+              }
             }
-          }
-        }                                  
-      }
-      break;
+          }                                  
+        }
+        break;
 
-      case 3:
-      if(diasem[diaDaSemanaAtual] == diaDaSemanaAtual){                           //DIA PARA FAZER CAFÉ É HOJE?
-        if(hora1 != 0 && hora1 == horaAtual && min1 == minutoAtual)  {     //SIM, A HORA PARA FAZER CAFÉ É MAIOR QUE A HORA ATUAL
-          digitalWrite(pinRele, HIGH);
-          estadoCafeteira = 1;
-          minTemp = minutoAtual;
-          Serial.println("Cafeteira Ligada timer 1");
-          delay(1000);
-        }else{
-          if(hora2 != 0 && hora2 == horaAtual && min2 == minutoAtual){
+        case 3:
+        if(diasem[diaDaSemanaAtual] == diaDaSemanaAtual){                           //DIA PARA FAZER CAFÉ É HOJE?
+          if(hora1 != 0 && hora1 == horaAtual && min1 == minutoAtual)  {     //SIM, A HORA PARA FAZER CAFÉ É MAIOR QUE A HORA ATUAL
             digitalWrite(pinRele, HIGH);
             estadoCafeteira = 1;
             minTemp = minutoAtual;
-            Serial.println("Cafeteira Ligada timer 2");
+            Serial.println("Cafeteira Ligada timer 1");
             delay(1000);
           }else{
-            if(hora3 != 0 && hora3 == horaAtual && min3 == minutoAtual){
+            if(hora2 != 0 && hora2 == horaAtual && min2 == minutoAtual){
               digitalWrite(pinRele, HIGH);
               estadoCafeteira = 1;
               minTemp = minutoAtual;
-              Serial.println("Cafeteira Ligada timer 3");
+              Serial.println("Cafeteira Ligada timer 2");
               delay(1000);
+            }else{
+              if(hora3 != 0 && hora3 == horaAtual && min3 == minutoAtual){
+                digitalWrite(pinRele, HIGH);
+                estadoCafeteira = 1;
+                minTemp = minutoAtual;
+                Serial.println("Cafeteira Ligada timer 3");
+                delay(1000);
+              }
             }
-          }
-        }                                  
+          }                                  
+        }
+        break;
+
+        default :
+        programacao = 0;
+        break;
       }
-      break;
-
-      default :
-      programacao = 0;
-      break;
-
     }
   }
 }

@@ -1,59 +1,8 @@
-
-/*
-******************************AREA DESTINADA A PROGRAMA DE DEBUG DO CÓDIGO*****************************************************
-*/
-#define pinBotaoDebug 16
-#define habilitaDebugSerial false  //define se envia informações do funcionamento para o monitor serial. "true" envia e "false" não envia. Utilizado apenas para identificar problemas de funcionamento atraves do monitor serial do IDE Arduino. Em situações normais, definir este parametro como "false". Quando usar o monitor, ele deve ser configurado para a velocidade de 115200.
-
-#if habilitaDebugSerial == true
-void debug(int pontoParada, String nomeVariavel, String valorVariavel, int tempoParada = -1) {  //TempoParada faz delay. Com -1, para até porta 13 mudar de nível
-
-  Serial.print("(");
-  Serial.print(pontoParada);
-  Serial.print(") ");
-
-  Serial.print(nomeVariavel);
-  Serial.print(":");
-  Serial.print(valorVariavel);
-  Serial.println();
-
-  if (tempoParada == -1) {
-
-    static bool estadoBotaoAnt = digitalRead(pinBotaoDebug);
-    static unsigned long delayDebounce;
-    bool estadoBotao;
-    bool aguarda = true;
-    while (aguarda) {
-      estadoBotao = digitalRead(pinBotaoDebug);
-      if ((estadoBotao != estadoBotaoAnt) && !estadoBotao) {
-        if ((millis() - delayDebounce) > 100) {
-          aguarda = false;
-          delayDebounce = millis();
-        }
-      } else if (estadoBotao != estadoBotaoAnt) {
-        delayDebounce = millis();
-      }
-      estadoBotaoAnt = estadoBotao;
-    }
-  } else if (tempoParada > 0) {
-    delay(tempoParada);
-  }
-}
-#endif
-/*
-******************************FIM DA AREA DESTINADA A PROGRAMA DE DEBUG DO CÓDIGO*****************************************************
-*/
-
 #include <WiFi.h>
 #include "time.h"
 #include "esp_sntp.h"
 
-/*
-TESTE CAFETEIRA
-  RESERVATÓRIO CHEIO:
-    - TEMPO PARA ESVAZIAR - 8,40 min
-    - LIGA DESLIGA RELÉ - 9,12 - 9,22 - 9,32 - 9,51 - 
-*/
+
 #define pinRele 17      //Pino usado para ligar a cafeteira
 #define detectaBule 18  //pino usado para conferir se o bule está na cafeteira ou não
 
@@ -61,8 +10,8 @@ TESTE CAFETEIRA
 void paginaHTML(WiFiClient client);
 void analisarProgramacao(int horaAtual, int minutoAtual, int diaDaSemanaAtual);
 void capturaDadosURL();
-//void capturaInfoURL(String currentLine, int *programacao, int diasem[], int *hora1, int *hora2, int *hora3, int *aux);
 
+/*DECLARAÇÃO DAS CONSTANTES USADAS PARA AJUSTAR A HORA*/
 const char* ssid = "Fbnet-fibra 2G";
 const char* password = "Fb16net00";
 const char* ntpServer1 = "pool.ntp.org";
@@ -70,10 +19,13 @@ const char* ntpServer2 = "time.nist.gov";
 const long  gmtOffset_sec = -3 * 60 * 60;
 const int   daylightOffset_sec = 0;
 const char* time_zone = "CET-1CEST,M3.5.0,M10.5.0/3";  // TimeZone rule for Europe/Rome including daylight adjustment rules (optional)
+/*FIM DECLARAÇÃO DAS CONSTANTES USADAS PARA AJUSTAR A HORA*/
 
-const int tempoMaxLigada = 9;   //tempo máximo que a cafeteira vai permanecer ligada em minutos
+
+
 
   /*************************definição de variáveis Globais***********************************/
+    const int tempoMaxLigada = 9;   //tempo máximo que a cafeteira vai permanecer ligada em minutos
     String currentLine = "";        // make a String to hold incoming data from the client
     int hora1 = 0, hora2 = 0, hora3 = 0;  // Horario que o café será feito
     int min1 = 0, min2= 0, min3 = 0;      //VARIÁVEIS PARA ARMAZENAR OS MINUTOS
@@ -87,25 +39,17 @@ WiFiServer server(80);
 
 void setup() {
 
-  #if habilitaDebugSerial == true
-      Serial.begin(115200);
-      pinMode(pinBotaoDebug, INPUT_PULLUP); 
-  #endif
-
   Serial.begin(115200);
   pinMode(pinRele, OUTPUT);
   pinMode(detectaBule, INPUT_PULLUP);
 
-  // set notification call-back function
   //sntp_set_time_sync_notification_cb( timeavailable );
   sntp_servermode_dhcp(1);
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer1, ntpServer2);
   pinMode(17, OUTPUT);  // set the LED pin mode
-
   delay(10);
 
   // We start by connecting to a WiFi network
-
   Serial.println();
   Serial.println();
   Serial.print("Connecting to ");

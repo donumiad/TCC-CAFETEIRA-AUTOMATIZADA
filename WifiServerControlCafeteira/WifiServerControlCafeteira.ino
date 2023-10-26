@@ -200,7 +200,6 @@ void capturaDadosURL(){
   currentLine = "";
 }
 
-
 void analisarProgramacao(int horaAtual, int minutoAtual, int diaDaSemanaAtual){
   if (programacao == 0 && mostraMsg == 1) {         //HÁ PROGRAMAÇÃO PARA FAZER CAFÉ?
     Serial.println("Cafeteira NÃO programada!");    //NÃO, ENTÃO IMPRIME A MSG
@@ -374,78 +373,4 @@ void paginaHTML(WiFiClient client){
     // The HTTP response ends with another blank line:
     client.println();
 }
-/*
-void capturaInfoURL(String currentLine, int *programacao, int diasem[], int *hora1, int *time2, int *time3, int *aux){ 
-  int aux2 = *aux;
-  programacao = atoi(currentLine[aux2+8]); //Armazena a quantidade de vezes que o café vai ser feito por dia
-  
-  //CAPTURA AS INFORMAÇÕES DA SEMANA
-  diasem[0] = atoi(currentLine[aux2 + 14]);
-  diasem[1] = atoi(currentLine[aux2 + 20]);
-  diasem[2] = atoi(currentLine[aux2 + 26]);
-  diasem[3] = atoi(currentLine[aux2 + 32]);
-  diasem[4] = atoi(currentLine[aux2 + 38]);
-  diasem[5] = atoi(currentLine[aux2 + 44]);
-  diasem[6] = atoi(currentLine[aux2 + 50]);
-  
-  //CAPTURA TIMER 1
-  hora1 += currentLine[aux2 + 58];
-  hora1 += currentLine[aux2 + 59];
-  hora1 += currentLine[aux2 + 63];
-  hora1 += currentLine[aux2 + 64];
-  //CAPTURA TIMER2
-  time2 += currentLine[aux2 + 72];
-  time2 += currentLine[aux2 + 73];
-  time2 += currentLine[aux2 + 77];
-  time2 += currentLine[aux2 + 78];
-  //CAPTURA TIMER2
-  time3 += currentLine[aux2 + 86];
-  time3 += currentLine[aux2 + 87];
-  time3 += currentLine[aux2 + 91];
-  time3 += currentLine[aux2 + 92];
 
-  aux = currentLine.length();
-
-}
-*/
-
-/*
-#define pinBotaoDebug 18
-#define habilitaDebugSerial false  //define se envia informações do funcionamento para o monitor serial. "true" envia e "false" não envia. Utilizado apenas para identificar problemas de funcionamento atraves do monitor serial do IDE Arduino. Em situações normais, definir este parametro como "false". Quando usar o monitor, ele deve ser configurado para a velocidade de 115200.
-
-#if habilitaDebugSerial == true
-void debug(int pontoParada, String nomeVariavel, String valorVariavel, int tempoParada = -1) {  //TempoParada faz delay. Com -1, para até porta 13 mudar de nível
-
-  Serial.print("(");
-  Serial.print(pontoParada);
-  Serial.print(") ");
-
-  Serial.print(nomeVariavel);
-  Serial.print(":");
-  Serial.print(valorVariavel);
-  Serial.println();
-
-  if (tempoParada == -1) {
-
-    static bool estadoBotaoAnt = digitalRead(pinBotaoDebug);
-    static unsigned long delayDebounce;
-    bool estadoBotao;
-    bool aguarda = true;
-    while (aguarda) {
-      estadoBotao = digitalRead(pinBotaoDebug);
-      if ((estadoBotao != estadoBotaoAnt) && !estadoBotao) {
-        if ((millis() - delayDebounce) > 100) {
-          aguarda = false;
-          delayDebounce = millis();
-        }
-      } else if (estadoBotao != estadoBotaoAnt) {
-        delayDebounce = millis();
-      }
-      estadoBotaoAnt = estadoBotao;
-    }
-  } else if (tempoParada > 0) {
-    delay(tempoParada);
-  }
-}
-#endif
-*/
